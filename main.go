@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -13,14 +15,41 @@ func main() {
 	if os.Getenv("IS_LAMBDA") != "" {
 		lambda.Start(handle)
 	} else {
-		handle()
+		req := loadSource()
+		handle(req)
 	}
 }
 
-func handle() (string, error) {
+//Req はリクエスト
+type Req struct {
+	//Message はメッセージ
+	Messatge string `json:"message"`
+	//Item は商品
+	Items []Item `json:"items"`
+}
+
+//Item はItem
+type Item struct {
+	//Name は品名
+	Name string `json:"name"`
+	//Price は金額
+	Price string `json:"price"`
+}
+
+func loadSource() Req {
+	file, _ := os.Open("./sample_req.json")
+	b, _ := ioutil.ReadAll(file)
+	var sampleReq Req
+	json.Unmarshal(b, &sampleReq)
+	return sampleReq
+}
+
+func handle(sampleReq Req) (string, error) {
+
+	fmt.Println(sampleReq)
 	fmt.Println(os.Getenv("TEST"))
 	fmt.Println("test")
-	//package 使えず・・エラーが出るわけでもなく何も出ない
+	//lambdaだとpackage 使えず・・エラーが出るわけでもなく何も出ない
 	//sample.Test()
 	log.Println("log だよ")
 	return "hoge", nil
